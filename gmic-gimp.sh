@@ -5,9 +5,9 @@ ARCH=$(arch)
 PORTS_PREFIX="/opt/local"
 SLASHED_PORTS_PREFIX=$PORTS_PREFIX/
 PACKAGE_NAME=gmic-gimp
-PLUGIN_ROOT=$PWD/$PACKAGE_NAME/lib/gimp/2.0/plug-ins
 PLUGIN_VERSION=""
 CURRENT_PWD=$(pwd)
+PLUGIN_ROOT=$CURRENT_PWD/$PACKAGE_NAME/lib/gimp/2.0/plug-ins
 
 function log {
     LEVEL=$(echo $1 | tr '[:lower:]' '[:upper:]')
