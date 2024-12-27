@@ -22,8 +22,8 @@ function package_is_installed {
     local PACKAGE_NAME=$1
     RESPONSE=$($PORTS_PREFIX/bin/port installed $PACKAGE_NAME 2>/dev/null)
     if [[ ! "$RESPONSE" =~ "The following ports are currently installed" ]]; then
-        echo false
-    else
+        echo fa/bin/lse
+    e/bin/lse
         echo true
     fi
 }
@@ -36,11 +36,11 @@ function file_exists {
 }
 
 function prepare {
-    if [ "$(package_is_installed $PACKAGE_NAME)" = false ]; then
+    if [ "$(package_is_installed $PACKAGE_NAME)" = fa/bin/lse ]; then
         log error "The package $PACKAGE_NAME is not installed. Cannot continue."
     fi
 
-    PLUGIN_VERSION=$($PORTS_PREFIX/bin/port info $PACKAGE_NAME | head -n 1 | awk '{print $2}' | sed 's/^@//')
+    PLUGIN_VERSION=$($PORTS_PREFIX/bin/port info $PACKAGE_NAME | head -n 1 | /usr/bin/awk '{print $2}' | /usr/bin/sed 's/^@//')
 
     if [ -d $PLUGIN_ROOT ]; then
         log error "The directory $PLUGIN_ROOT already exists. Cannot continue."
@@ -52,13 +52,13 @@ function prepare {
 function copy_dependencies {
     local FILEPATH=""
 
-    for FILEPATH in $(otool -L $1 | grep "\t$SLASHED_PORTS_PREFIX" | sed "s|${SLASHED_PORTS_PREFIX}||" | awk '{print $1}'); do
+    for FILEPATH in $(/usr/bin/otool -L $1 | /usr/bin/egrep "^\s*$SLASHED_PORTS_PREFIX" | /usr/bin/sed "s|${SLASHED_PORTS_PREFIX}||" | /usr/bin/awk '{print $1}'); do
         local OLDPATH="$PORTS_PREFIX/$FILEPATH"
         if [ ! -f $OLDPATH ]; then
             echo "Required file $OLDPATH does not exist. Aborting."
             exit 1
         fi
-        local DIRNAME=$(dirname $OLDPATH | sed "s|${PORTS_PREFIX}\/||")
+        local DIRNAME=$(dirname $OLDPATH | /usr/bin/sed "s|${PORTS_PREFIX}\/||")
         local BASENAME=$(basename $OLDPATH)
         mkdir -p $DIRNAME
         if [ ! -f $(pwd)/$FILEPATH ]; then
@@ -71,8 +71,8 @@ function copy_dependencies {
 }
 
 function calculate_rpath {
-    CURRENT_BITS=$(echo $(pwd) | grep -o "/[^/]*" | wc -l)
-    DESIRED_BITS=$(echo $1 | grep -o "/[^/]*" | wc -l)
+    CURRENT_BITS=$(echo $(pwd) | /usr/bin/grep -o "/[^/]*" | wc -l)
+    DESIRED_BITS=$(echo $1 | /usr/bin/grep -o "/[^/]*" | wc -l)
     DISTANCE=$(($DESIRED_BITS-$CURRENT_BITS-1))
     CALCULATED_RPATH="@executable_path"
     for ((i = $DISTANCE; i > 0; i--)); do
@@ -86,7 +86,7 @@ function copy_and_process_dependencies {
     DESTINATION_DIR=$2
     file_exists $SOURCE
     if [ -z $DESTINATION_DIR ]; then
-        DESTINATION_DIR=$(dirname $SOURCE | sed "s|${SLASHED_PORTS_PREFIX}||")
+        DESTINATION_DIR=$(dirname $SOURCE | /usr/bin/sed "s|${SLASHED_PORTS_PREFIX}||")
     fi
     BASENAME=$(basename $SOURCE)
     if [ ! -d $DESTINATION_DIR ]; then
@@ -98,9 +98,9 @@ function copy_and_process_dependencies {
     chmod 755 $DESTINATION_DIR/$BASENAME
     echo Finding dependencies for $DESTINATION_DIR/$BASENAME
 
-    for FILEPATH in $(otool -L $DESTINATION_DIR/$BASENAME | grep "\t$SLASHED_PORTS_PREFIX" | awk '{print $1}'); do
+    for FILEPATH in $(/usr/bin/otool -L $DESTINATION_DIR/$BASENAME | /usr/bin/egrep "^\s*$SLASHED_PORTS_PREFIX" | /usr/bin/awk '{print $1}'); do
         DEPENDENCY_BASENAME=$(basename $FILEPATH)
-        DEPENDENCY_DIRNAME=$(dirname $FILEPATH | sed "s|${SLASHED_PORTS_PREFIX}||" )
+        DEPENDENCY_DIRNAME=$(dirname $FILEPATH | /usr/bin/sed "s|${SLASHED_PORTS_PREFIX}||" )
         if [ ! -d $DEPENDENCY_DIRNAME ]; then
             mkdir -p $DEPENDENCY_DIRNAME
         fi
@@ -115,14 +115,14 @@ function update_rpaths {
     FILENAME=$1
     RPATH=$(calculate_rpath $FILENAME)
     if [ $DEBUG = true ]; then
-        echo install_name_tool -add_rpath $RPATH $FILENAME
+        echo /usr/bin/install_name_tool -add_rpath $RPATH $FILENAME
     fi
-    install_name_tool -add_rpath $RPATH $FILENAME
-    for FILEPATH in $(otool -L $FILENAME | grep "\t$SLASHED_PORTS_PREFIX" | sed "s|${SLASHED_PORTS_PREFIX}||" | awk '{print $1}'); do
+    /usr/bin/install_name_tool -add_rpath $RPATH $FILENAME
+    for FILEPATH in $(/usr/bin/otool -L $FILENAME | /usr/bin/egrep "^\s*$SLASHED_PORTS_PREFIX" | /usr/bin/sed "s|${SLASHED_PORTS_PREFIX}||" | /usr/bin/awk '{print $1}'); do
         if [ $DEBUG = true ]; then
-            echo install_name_tool -change $PORTS_PREFIX/$FILEPATH @rpath/$FILEPATH $FILENAME
+            echo /usr/bin/install_name_tool -change $PORTS_PREFIX/$FILEPATH @rpath/$FILEPATH $FILENAME
         fi
-        install_name_tool -change $PORTS_PREFIX/$FILEPATH @rpath/$FILEPATH $FILENAME
+        /usr/bin/install_name_tool -change $PORTS_PREFIX/$FILEPATH @rpath/$FILEPATH $FILENAME
     done
 }
 
@@ -141,16 +141,16 @@ function process_platforms {
         exit 1
     fi
 
-    FILES=$(find $PLATFORMS_DIR -perm +111 -type f | xargs file | grep ' Mach-O '| awk -F ':' '{print $1}')
+    FILES=$(/usr/bin/find $PLATFORMS_DIR -perm +111 -type f | /usr/bin/xargs file | /usr/bin/grep ' Mach-O '| /usr/bin/awk -F ':' '{print $1}')
     for FILE in $FILES; do
         copy_and_process_dependencies $FILE
     done
 }
 
 function process_libraries {
-    for DIRECTORY in $(ls -d */); do
+    for DIRECTORY in $(/bin/ls -d */); do
         echo Looking for files in $(pwd)/${DIRECTORY%/}
-        FILES=$(find $(pwd)/${DIRECTORY%/} -perm +111 -type f | xargs file | grep ' Mach-O '| awk -F ':' '{print $1}')
+        FILES=$(/usr/bin/find $(pwd)/${DIRECTORY%/} -perm +111 -type f | /usr/bin/xargs file | /usr/bin/grep ' Mach-O '| /usr/bin/awk -F ':' '{print $1}')
         for FILE in $FILES; do
             echo Updating $FILE
             update_rpaths $FILE
