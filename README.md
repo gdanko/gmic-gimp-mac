@@ -18,7 +18,7 @@ Go to the [MacPorts](https://www.macports.org) and install MacPorts. This docume
 
 ### Install the required ports
 I installed the following ports, just to make sure I have any development libraries I need.
-* gimp2
+* gimp2-devel
 * gmic-gimp
 
 ### Execute the script
