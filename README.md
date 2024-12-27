@@ -14,7 +14,7 @@ In short, the script does the following:
 
 ## How to do it
 ### Install MacPorts
-Go to the [MacPorts](https://www.macports.org) and install MacPorts. This document isn't designed to serve as a MacPorts tutorial so I am relying on you to figure this out for yourself.
+Go to the MacPorts [home page](https://www.macports.org) and install MacPorts. This document isn't designed to serve as a MacPorts tutorial so I am relying on you to figure this out for yourself.
 
 ### Install the required ports
 I installed the following ports, just to make sure I have any development libraries I need.
